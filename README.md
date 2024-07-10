@@ -12,10 +12,9 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 ![slash commands](assets/slash-commands.png)
 ![edit command](assets/edit-command.png)
 7. Install your app in your slack workspace of choice. This is done on the home page of your slack app -> *Install your app* -> *Install in workspace*
-8. Clone this repository, and start the flask application on port 8080 using `python3 app.py`
+8. Clone this repository, and start the flask application on port 8080 using `python3 app.py`. If you are missing flask, install it using `pip3 install flask`.
 9. Use the commands in any text channel in your slack workspace - the queue app should work! ⭐
 
 ### Example usage:
 
 ![alt text](assets/example-usage.png)
-
