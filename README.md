@@ -7,7 +7,7 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 2. **Create a new app** -> **From scratch**
 3. When asked for **Add features and functionality**, activate **Slash commands** and **Bots**
 4. [Install ngrok](https://ngrok.com/download) and [add your authtoken](https://ngrok.com/docs/guides/getting-started/#step-3-connect-your-agent-to-your-ngrok-account)
-5. Start your ngrok instance using `ngrok http http://localhost:8080` (swap the port if 8080 is occupied), and save your *forwarding url* shown (should look something like `https://5d71-111-1-243-109.ngrok-free.app`)
+5. Start your ngrok instance using `ngrok http http://localhost:8080` (swap the port if 8080 is occupied), and save your *forwarding url* shown (should look something like `https://5d71-111-1-243-109.ngrok-free.app`). 
 6. In your slack apps page, go to Slash commands, and create one for each of the endpoints `/qjoin`, `/qleave` and `/qshow`. In the *Request URL* field, enter your forwarding url as the endpoint base url. `/qjoin` Example: `https://5d71-111-1-243-109.ngrok-free.app/qjoin`
 ![slash commands](assets/slash-commands.png)
 ![edit command](assets/edit-command.png)
@@ -18,3 +18,7 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 ### Example usage:
 
 ![alt text](assets/example-usage.png)
+
+![alt text2](assets/swapping.png)
+
+![alt text3](assets/buttons.png)
