@@ -1,6 +1,22 @@
 # best-queue
 A self-hosted substitute for [Queue](https://ubots.co/queue/)
 
+### Project plans:
+
+1. Application ✅
+2. Docker config for an easily deployable image 🔁
+3. Automatic deployment to dockerhub/artifactory 🔁
+
+### Example usage:
+#### Joining queue
+<img src="assets/qjoin_example.png" width="600" />
+
+#### Showing queue
+<img src="assets/qshow_example.png" width="600" />
+
+#### Swapping places
+<img src="assets/qswap_example.png" width="600" />
+
 ### Creating the slack app and starting the MVP application
 
 1. Go to the [slack apps page](https://api.slack.com/apps)
@@ -14,14 +30,3 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 7. Install your app in your slack workspace of choice. This is done on the home page of your slack app -> *Install your app* -> *Install in workspace*
 8. Clone this repository, and start the flask application on port 8080 using `python3 app.py`. If you are missing flask, install it using `pip3 install flask`.
 9. Use the commands in any text channel in your slack workspace - the queue app should work! ⭐
-
-### Example usage:
-
-#### Joining queue
-<img src="assets/qjoin_example.png" width="600" />
-
-#### Showing queue
-<img src="assets/qshow_example.png" width="600" />
-
-#### Swapping places
-<img src="assets/qswap_example.png" width="600" />
