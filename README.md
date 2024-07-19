@@ -18,10 +18,10 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 ### Example usage:
 
 #### Joining queue
-<img src="assets/qjoin_example.png" width="400" />
+<img src="assets/qjoin_example.png" width="600" />
 
 #### Showing queue
-![alt text2](assets/qshow_example.png)
+<img src="assets/qshow_example.png" width="600" />
 
 #### Swapping places
-![alt text3](assets/qswap_example.png)
+<img src="assets/qswap_example.png" width="600" />
