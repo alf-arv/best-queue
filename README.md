@@ -18,7 +18,7 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 ### Example usage:
 
 #### Joining queue
-<img src="assets/qjoin_example.png" max-width="400" />
+<img src="assets/qjoin_example.png" width="400" />
 
 #### Showing queue
 ![alt text2](assets/qshow_example.png)
