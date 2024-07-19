@@ -17,8 +17,11 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 
 ### Example usage:
 
-![alt text](assets/example-usage.png)
+#### Joining queue
+![alt text](assets/qjoin_example.png)
 
-![alt text2](assets/swapping.png)
+#### Showing queue
+![alt text2](assets/qshow_example.png)
 
-![alt text3](assets/buttons.png)
+#### Swapping places
+![alt text3](assets/qswap_example.png)
