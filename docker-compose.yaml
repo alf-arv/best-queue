@@ -1,0 +1,14 @@
+version: '3'
+services:
+  queue-app:
+    image: best-queue
+    container_name: queue-app-container
+    hostname: queue-app
+    ports:
+      - "8080:8080"
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
