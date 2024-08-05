@@ -18,7 +18,7 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 <img src="assets/qswap_example.png" width="600" />
 
 ## Setting up and running the application
-### Create the slack app
+### Create the slack app and set it up for local development using ngrok
 
 1. Go to the [slack apps page](https://api.slack.com/apps)
 2. **Create a new app** -> **From scratch**
