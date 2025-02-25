@@ -8,6 +8,8 @@ on:
         type: string
         required: true
 
+run-name: Publish latest main as version ${{ github.event.inputs.version }} to Dockerhub
+
 jobs:
   push_to_registry:
     name: Push latest version to Docker Hub
@@ -51,4 +53,4 @@ jobs:
         with:
           subject-name: index.docker.io/alfarv/best-queue
           subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: false
+          push-to-registry: true
