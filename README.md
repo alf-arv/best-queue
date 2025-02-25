@@ -1,11 +1,11 @@
 # best-queue
 A self-hosted substitute for [Queue](https://ubots.co/queue/)
 
-### Project plans:
+### Project milestones:
 
 1. Application ✅
 2. Docker config for an easily deployable image ✅
-3. Github action to build, tag and push latest image to dockerhub ✅
+3. Github actions to build, tag and push docker images to dockerhub ✅
 
 ### Example usage:
 #### Joining queue
