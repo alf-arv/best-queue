@@ -1,10 +1,10 @@
-name: Publish Docker image to Dockerhub
+name: Publish latest main as image to Dockerhub
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: Image version tag to push
+        description: Version to tag image with
         type: string
         required: true
 
@@ -12,7 +12,7 @@ run-name: Publish latest main as version ${{ github.event.inputs.version }} to D
 
 jobs:
   push_to_registry:
-    name: Push latest version to Docker Hub
+    name: Push current main to Docker Hub with specified tag
     runs-on: ubuntu-latest
     permissions:
       packages: write
