@@ -41,7 +41,7 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            type=raw,value=${{ github.event.inputs.version }}
+            ${{ github.event.inputs.version }}
           labels: |
             type=raw,value=org.opencontainers.image.version=${{ github.event.inputs.version }}
 
