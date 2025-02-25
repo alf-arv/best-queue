@@ -5,7 +5,7 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 
 1. Application ✅
 2. Docker config for an easily deployable image ✅
-3. Automatic deployment to dockerhub/artifactory 🔁
+3. Github action to build, tag and push latest image to dockerhub ✅
 
 ### Example usage:
 #### Joining queue
@@ -18,6 +18,13 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 <img src="assets/qswap_example.png" width="600" />
 
 ## Setting up and running the application
+### Deploy the back-end application
+#### Option 1 - using docker
+1. Run `docker-compose up`. The latest image will be pulled and the application starts accepting requests at localhost:8080.
+
+#### Option 2 - run with python
+1. Clone this repository, and start the flask application on port 8080 using `python3 app.py`. If you are missing flask, install it using `pip3 install flask`.
+
 ### Create the slack app and set it up for local development using ngrok
 
 1. Go to the [slack apps page](https://api.slack.com/apps)
@@ -31,11 +38,5 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/)
 7. In your slack apps page go to Interactivity & Shortcuts and enable it using the toggle. In the *Request URL* field, enter your forwarding url appended with `/buttonproxy`. Example: `https://5d71-111-1-243-109.ngrok-free.app/buttonproxy`
 8. Install your app in your slack workspace of choice. This is done on the home page of your slack app -> *Install your app* -> *Install in workspace*
 
-### Deploy the back-end application
-#### Option 1 - using docker
-1. Run `docker-compose up`. The latest image will be pulled and the application starts accepting requests at localhost:8080.
-
-#### Option 2 - run with python
-1. Clone this repository, and start the flask application on port 8080 using `python3 app.py`. If you are missing flask, install it using `pip3 install flask`.
 
 Use the commands in any text channel in your slack workspace - the queue app should work! ⭐
