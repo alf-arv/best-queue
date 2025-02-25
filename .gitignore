@@ -1,2 +1,6 @@
 start_static_ngrok.sh
+lib/
+bin/
+pyvenv.cfg
+*.DS_Store
 
