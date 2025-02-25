@@ -29,7 +29,7 @@ def qjoin(user_id, queue_id):
         enqueued_users[user_id] = {'joined': datetime.datetime.now(), 'queue_id': queue_id}
         message = f"{make_tag(user_id)} has joined {get_queue_designation(queue_id)}. Position: {len(queues[queue_id])}"
 
-    return to_potentially_interactive_channel_response(message + f" \n{pretty_queue(queue_id)}", queue_id)
+    return to_static_channel_response(message + f" \n{pretty_queue(queue_id)}")
 
 @app.route('/qleave', methods=['POST'])
 def qleave_endpoint():
@@ -48,7 +48,7 @@ def qleave(user_id, queue_id):
         queues[queue_id] = [id for id in queues[queue_id] if id != user_id]
         message = f"{'<@'+user_id+'>'} has left {get_queue_designation(queue_id)}. \n {pretty_queue(queue_id)}"
     
-    return to_potentially_interactive_channel_response(message, queue_id)
+    return to_static_channel_response(message)
 
 @app.route('/qshowall', methods=['POST'])
 def show_all_endpoint():
@@ -131,7 +131,7 @@ def pretty_current_queues():
 
 def pretty_queue(queue_id):
     if queue_id in queues and len(queues[queue_id]) > 0:
-        return f"{'This channels queue:' if queue_id in is_default_queue else 'Current *'+queue_id+'* queue:'}\n{currentQueuePositions(queue_id)}"
+        return f"{'*This channels queue:*' if queue_id in is_default_queue else 'Current *'+queue_id+'* queue:'}\n{currentQueuePositions(queue_id)}"
     return f"{'The current queue is empty.' if queue_id in is_default_queue else 'The queue *'+queue_id+'* is empty.'}"
 
 def currentQueuePositions(queue_id):
@@ -202,7 +202,7 @@ def to_interactive_channel_response(message: str):
 def to_static_channel_response(message: str):
     return jsonify({
             "response_type": "in_channel",
-            "text": f"{message}"
+            "text": f"{message}\n_Commands:_ `/qshow`, `/qjoin`, `/qleave` _and_ `/qswap [pos]`"
         })
 
 
