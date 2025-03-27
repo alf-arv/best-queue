@@ -105,6 +105,111 @@ def qswap(user_id, queue_id, swap_with):
     finally:
         return to_static_channel_response(message)
 
+@app.route('/qkick', methods=['POST'])
+def qkick_endpoint():
+    if len(request.form['text'].split(' ')) < 2:
+        queue_id, pos_to_kick = f"#{request.form['channel_id']}", request.form['text']
+        int_pos_to_kick = int(pos_to_kick)
+    elif len(request.form['text'].split(' ')) > 2:
+        return to_static_channel_response("Invalid kick request. Usage: /qkick [pos] or /qkick [queue] [pos]")
+    else:
+        queue_id, pos_to_kick = request.form['text'].split(' ')
+        int_pos_to_kick = int(pos_to_kick)
+        
+    try:
+        return qkick(queue_id, int_pos_to_kick)
+    except ValueError:
+        return to_static_channel_response("Kick could not be performed.")
+
+def qkick(queue_id, position):
+    if queue_id not in queues or position < 1 or position > len(queues[queue_id]):
+        return to_static_channel_response(f"Invalid kick. No user at position {str(position)} in {get_queue_designation(queue_id)}.")
+
+    kicked_user_id = queues[queue_id].pop(position - 1)
+
+    if not any(kicked_user_id in q for q in queues.values()):
+        enqueued_users.pop(kicked_user_id, None)
+    
+    message = f"{make_tag(kicked_user_id)} has been kicked from {get_queue_designation(queue_id)} 🥾\n{pretty_queue(queue_id)}"
+    return to_static_channel_response(message)
+
+@app.route('/qexportstate', methods=['POST'])
+def qexportstate():
+    if request.form['text'] != 'please':
+        return jsonify({
+            "response_type": "in_channel",
+            "text": "Please do not use this slash command."
+        })
+    
+    exportable_users = {user_id: {**data, "joined": data["joined"].isoformat()} for user_id, data in enqueued_users.items()}
+    state_json = json.dumps(
+        {"queues": queues, "enqueued_users": exportable_users, "is_default_queue": is_default_queue},
+        separators=(',', ':')
+    )
+    return jsonify(response_type="in_channel", text=f"```{state_json}\n```")
+
+
+@app.route('/qimportstate', methods=['POST'])
+def qimportstate():
+    if len(request.form['text'].split(' ', 1)) < 2 or request.form['text'].split(' ', 1)[0] != 'please':
+        return jsonify({
+            "response_type": "in_channel",
+            "text": "Please do not use this slash command."
+        })
+
+    global queues, enqueued_users, is_default_queue
+    json_blob = request.form['text'].split(' ', 1)[1]
+    try:
+        data = json.loads(json_blob)
+        queues = data.get("queues", {})
+        enqueued_users = {user_id: {**data, "joined": datetime.datetime.fromisoformat(data["joined"])} for user_id, data in data.get("enqueued_users", {}).items()}
+        is_default_queue = data.get("is_default_queue", {})
+
+        return jsonify({
+            "response_type": "in_channel",
+            "text": f"successfully imported state.\n{pretty_current_queues()}"
+        })
+    except json.JSONDecodeError:
+        return jsonify(status="error", message="Invalid input state format.")
+
+@app.route('/qinsertatposition', methods=['POST'])
+def qinsertatposition_endpoint():
+    command_text = request.form['text'].split(' ')
+    
+    if len(command_text) < 2 or len(command_text) > 3:
+        return to_static_channel_response("Invalid command format. Usage: /qinsertatposition [queue-name] [user-id] [position] or /qinsertatposition [user-id] [position]")
+
+    # Queue id provided
+    if len(command_text) == 3:
+        queue_id = command_text[0]
+        user_id_to_insert = command_text[1]
+        try:
+            position_to_insert = int(command_text[2])
+        except ValueError:
+            return to_static_channel_response("Invalid position provided. Please provide a valid integer for the position.")
+    else:
+        queue_id = f"#{request.form['channel_id']}"
+        user_id_to_insert = command_text[0]
+        try:
+            position_to_insert = int(command_text[1])
+        except ValueError:
+            return to_static_channel_response("Invalid position provided. Please provide a valid integer for the position.")
+    
+    return qinsertatposition(user_id_to_insert, queue_id, position_to_insert)
+
+def qinsertatposition(user_id_to_insert, queue_id, position_to_insert):
+    if queue_id not in queues:
+        return to_static_channel_response(f"Queue {queue_id} does not exist.")
+    if position_to_insert < 1 or position_to_insert > len(queues[queue_id]) + 1:
+        return to_static_channel_response(f"Invalid position {position_to_insert}. Please provide a position between 1 and {len(queues[queue_id]) + 1}.")
+    
+    queues[queue_id].insert(position_to_insert - 1, user_id_to_insert)
+    enqueued_users[user_id_to_insert] = {'joined': datetime.datetime.now(), 'name': f"User {user_id_to_insert}", 'queue_id': queue_id}
+    
+    message = f"{make_tag(user_id_to_insert)} has been inserted at position {position_to_insert} in {get_queue_designation(queue_id)}.\n{pretty_queue(queue_id)}"
+    
+    return to_static_channel_response(message)
+
 @app.route('/buttonproxy', methods=['POST'])
 def route_to_action():
     # using the action buttons, all values below are available
@@ -151,7 +256,7 @@ def make_tag(id):
     return '<@'+id+'>'
 
 def simplify_timestamp(timestamp):
-    return str(timestamp.time().hour)+':'+str(timestamp.time().minute)
+    return str(timestamp.time().hour)+':'+str(timestamp.time().minute)+', '+str(timestamp.date())
 
 def get_queue_designation(queue_id):
     if queue_id in is_default_queue:
@@ -203,7 +308,7 @@ def to_interactive_channel_response(message: str):
 def to_static_channel_response(message: str):
     return jsonify({
             "response_type": "in_channel",
-            "text": f"{message}\n_Commands:_ `/qshow`, `/qjoin`, `/qleave` _and_ `/qswap [pos]`"
+            "text": f"{message}\n_Commands:_ `/qshow`, `/qjoin`, `/qleave`, `/qswap [pos]` _and_ `/qkick [pos]`"
         })
 
 
