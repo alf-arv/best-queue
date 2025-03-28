@@ -256,7 +256,7 @@ def make_tag(id):
     return '<@'+id+'>'
 
 def simplify_timestamp(timestamp):
-    return str(timestamp.time().hour)+':'+str(timestamp.time().minute)+', '+str(timestamp.date())
+    return timestamp.strftime("%H:%M UTC, on %b %d")
 
 def get_queue_designation(queue_id):
     if queue_id in is_default_queue:
