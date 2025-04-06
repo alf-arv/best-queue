@@ -51,6 +51,6 @@ Exporting and importing state requires a password to be provided, to avoid misus
   <img src="assets/edit-command.png" width="405" /> 
 </p>
 
-5. Install your app in your slack workspace of choice. This is done on the home page of your slack app -> **Install your app** -> *Install in workspace*
+5. Install your app in your slack workspace of choice. This is done on the home page of your slack app -> *Install your app* -> *Install in workspace*
 
 Use the commands in any text channel in your slack workspace - the queue app should work! ⭐
