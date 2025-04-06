@@ -8,6 +8,7 @@ queues: dict[str, list] = {}
 enqueued_users = {}
 is_default_queue: dict[str,bool] = {}
 
+# -- JOIN --
 @app.route('/qjoin', methods=['POST'])
 def qjoin_endpoint():
     queue_id = request.form['text']
@@ -31,6 +32,7 @@ def qjoin(user_id, queue_id):
 
     return to_static_channel_response(message + f" \n{pretty_queue(queue_id)}")
 
+# -- LEAVE --
 @app.route('/qleave', methods=['POST'])
 def qleave_endpoint():
     queue_id = request.form['text']
@@ -50,10 +52,12 @@ def qleave(user_id, queue_id):
     
     return to_static_channel_response(message)
 
+# -- SHOW ALL --
 @app.route('/qshowall', methods=['POST'])
 def show_all_endpoint():
     return to_static_channel_response(pretty_current_queues())
 
+# -- SHOW --
 @app.route('/qshow', methods=['POST'])
 def show_queue_endpoint():
     queue_id = request.form['text']
@@ -63,20 +67,7 @@ def show_queue_endpoint():
 
     return to_static_channel_response(pretty_queue(queue_id))
 
-@app.route('/qcreate', methods=['POST'])
-def create_new_queue_if_not_exists_endpoint():
-    queue_id = request.form['text']
-    return create_new_queue_if_not_exists(queue_id)
-
-def create_new_queue_if_not_exists(new_queue_id):
-    message = f"Unable to create the queue with name *{new_queue_id}*."
-    if queues[new_queue_id]:
-        message = f"Queue *{new_queue_id}* already exists."
-    else:
-        queues[new_queue_id] = []
-        message = f"Queue *{new_queue_id}* created."
-    return to_static_channel_response(message)
-
+# -- SWAP --
 @app.route('/qswap', methods=['POST'])
 def qswap_endpoint():
     if len(request.form['text'].split(' ')) < 2:
@@ -105,6 +96,7 @@ def qswap(user_id, queue_id, swap_with):
     finally:
         return to_static_channel_response(message)
 
+# -- KICK --
 @app.route('/qkick', methods=['POST'])
 def qkick_endpoint():
     if len(request.form['text'].split(' ')) < 2:
@@ -133,6 +125,8 @@ def qkick(queue_id, position):
     message = f"{make_tag(kicked_user_id)} has been kicked from {get_queue_designation(queue_id)} 🥾\n{pretty_queue(queue_id)}"
     return to_static_channel_response(message)
 
+
+# -- ADMIN TOOLS & COMMANDS --
 @app.route('/qexportstate', methods=['POST'])
 def qexportstate():
     if request.form['text'] != 'please':
@@ -147,7 +141,6 @@ def qexportstate():
         separators=(',', ':')
     )
     return jsonify(response_type="in_channel", text=f"```{state_json}\n```")
-
 
 @app.route('/qimportstate', methods=['POST'])
 def qimportstate():
@@ -179,7 +172,7 @@ def qinsertatposition_endpoint():
     if len(command_text) < 2 or len(command_text) > 3:
         return to_static_channel_response("Invalid command format. Usage: /qinsertatposition [queue-name] [user-id] [position] or /qinsertatposition [user-id] [position]")
 
-    # Queue id provided
+    # If queue id is provided
     if len(command_text) == 3:
         queue_id = command_text[0]
         user_id_to_insert = command_text[1]
@@ -204,28 +197,15 @@ def qinsertatposition(user_id_to_insert, queue_id, position_to_insert):
         return to_static_channel_response(f"Invalid position {position_to_insert}. Please provide a position between 1 and {len(queues[queue_id]) + 1}.")
     
     queues[queue_id].insert(position_to_insert - 1, user_id_to_insert)
-    enqueued_users[user_id_to_insert] = {'joined': datetime.datetime.now(), 'name': f"User {user_id_to_insert}", 'queue_id': queue_id}
+    enqueued_users[user_id_to_insert] = {'joined': datetime.datetime.now(), 'queue_id': queue_id}
     
     message = f"{make_tag(user_id_to_insert)} has been inserted at position {position_to_insert} in {get_queue_designation(queue_id)}.\n{pretty_queue(queue_id)}"
     
     return to_static_channel_response(message)
 
-@app.route('/buttonproxy', methods=['POST'])
-def route_to_action():
-    # using the action buttons, all values below are available
-    payload = json.loads(request.form['payload'])
-    action = payload['actions'][0]['name']
-    user_id = payload['user']['id']
-    channel_id = "#"+payload['channel']['id']
-
-    if action == "qjoin":
-        return qjoin(user_id, channel_id)
-    if action == "qleave":
-        return qleave(user_id, channel_id)
-
+# -- UTIL METHODS --
 def pretty_current_queues():
     result = ""
-
     for k,l in queues.items():
         if l != []:
             result += f"*Queue {k}:*\n{currentQueuePositions(k)}\n"
@@ -268,41 +248,6 @@ def fallback_if_blank(input, fallback):
     if result == "":
         return fallback
     return result
-
-def to_potentially_interactive_channel_response(message: str, queue_id: str):
-    if queue_id in is_default_queue:
-        return to_interactive_channel_response(message)
-    else:
-        return to_static_channel_response(message)
-
-def to_interactive_channel_response(message: str):
-    return jsonify({
-            "response_type": "in_channel",
-            "text": f"{message}",
-            "attachments": [
-            {
-                "text": "Actions:",
-                "fallback": "You are unable to manage the queue",
-                "callback_id": "queue_actions",
-                "color": "#3AA3E3",
-                "attachment_type": "default",
-                "actions": [
-                    {
-                        "name": "qjoin",
-                        "text": "Join",
-                        "type": "button",
-                        "value": "join"
-                    },
-                    {
-                        "name": "qleave",
-                        "text": "Leave",
-                        "type": "button",
-                        "value": "leave"
-                    }
-                ]
-            }
-        ]
-        })
 
 def to_static_channel_response(message: str):
     return jsonify({
