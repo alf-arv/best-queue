@@ -7,6 +7,7 @@ A self-hosted substitute for [Queue](https://ubots.co/queue/).
 2. Docker config for an easily deployable image ✅
 3. Automated Github Actions workflows to build, tag and push docker images to dockerhub ✅
 4. Support for exporting and importing state ✅
+5. Periodic backup of in-memory state to persistent storage ✅
 
 ### Example usage:
 #### Joining
@@ -31,6 +32,9 @@ Exporting and importing state requires a password to be provided, to avoid misus
   <img src="assets/exportstate.png" width="405" />
   <img src="assets/importstate.png" width="405" /> 
 </p>
+
+#### Period backup of state
+The application dumps its internal state to the docker volume every hour, which it attempts importing on application startup. This makes the application resilient across restarts, outages or image upgrades.
 
 ## Setting up and running the application
 ### Deploy the back-end application

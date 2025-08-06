@@ -1,12 +1,23 @@
 from flask import Flask, request, jsonify
 import datetime
 import json
+import threading
+import time
+import os
+import logging
 
 app = Flask(__name__)
 
 queues: dict[str, list] = {}
 enqueued_users = {}
 is_default_queue: dict[str,bool] = {}
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+BACKUP_FILE_PATH = "/data/backup.txt"  # Path matching docker volume config
+BACKUP_FILE_PATH_LOCAL = "./backup.txt"  # Fallback for local execution
+
 
 # -- JOIN --
 @app.route('/qjoin', methods=['POST'])
@@ -203,6 +214,63 @@ def qinsertatposition(user_id_to_insert, queue_id, position_to_insert):
     
     return to_static_channel_response(message)
 
+
+# -- PERSISTENT STATE BACKUP/RESTORE --
+def save_state_to_backup():
+    try:
+        backup_path = get_backup_file_path()
+        
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(backup_path), exist_ok=True)
+        
+        exportable_users = {user_id: {**data, "joined": data["joined"].isoformat()} for user_id, data in enqueued_users.items()}
+        
+        state_data = {
+            "queues": queues,
+            "enqueued_users": exportable_users,
+            "is_default_queue": is_default_queue,
+            "backup_timestamp": datetime.datetime.now().isoformat()
+        }
+        
+        with open(backup_path, 'w') as f:
+            json.dump(state_data, f, separators=(',', ':'))
+        
+        logger.info(f"State backed up successfully to {backup_path}")
+        
+    except Exception as e:
+        logger.error(f"Failed to save backup - error: {e}")
+
+def restore_state_from_backup():
+    global queues, enqueued_users, is_default_queue
+    
+    try:
+        backup_path = get_backup_file_path()
+        
+        if not os.path.exists(backup_path):
+            logger.info(f"No state file found at {backup_path}, starting with empty state")
+            return
+        
+        with open(backup_path, 'r') as f:
+            data = json.load(f)
+        
+        # Restore state
+        queues = data.get("queues", {})
+        enqueued_users = {user_id: {**user_data, "joined": datetime.datetime.fromisoformat(user_data["joined"])} for user_id, user_data in data.get("enqueued_users", {}).items()}
+        is_default_queue = data.get("is_default_queue", {})
+        
+        backup_timestamp = data.get("backup_timestamp", "unknown")
+        logger.info(f"State restored successfully from backup created at {backup_timestamp}")
+    except Exception as e:
+        logger.error(f"Failed to restore from backup: {e}")
+        logger.info("Starting with empty state")
+
+def backup_worker():
+    while True:
+        # Backup state every 1 hour
+        time.sleep(3600)
+        save_state_to_backup()
+
+
 # -- UTIL METHODS --
 def pretty_current_queues():
     result = ""
@@ -255,6 +323,20 @@ def to_static_channel_response(message: str):
             "text": f"{message}\n_Commands:_ `/qshow`, `/qjoin`, `/qleave`, `/qswap [pos]` _and_ `/qkick [pos]`"
         })
 
+def get_backup_file_path():
+    # Check if /data directory exists (docker volume mount)
+    if os.path.exists("/data"):
+        return BACKUP_FILE_PATH
+    else:
+        return BACKUP_FILE_PATH_LOCAL
+
+def start_periodic_backup_thread():
+    backup_thread = threading.Thread(target=backup_worker, daemon=True)
+    backup_thread.start()
+
 
 if __name__ == '__main__':
+    restore_state_from_backup()
+    start_periodic_backup_thread()
+    save_state_to_backup()
     app.run(host='0.0.0.0', port=8080)
