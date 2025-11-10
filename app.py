@@ -103,7 +103,7 @@ def qswap(user_id, queue_id, swap_with):
         queues[queue_id][current_pos] = queues[queue_id][swap_with_pos]
         queues[queue_id][swap_with_pos] = user_id
 
-        message = f"{make_tag(user_id)} swapped places with {make_tag(queues[queue_id][current_pos])}\n{pretty_queue(queue_id)}."
+        message = f"{make_tag(user_id)} swapped places with {make_tag(queues[queue_id][current_pos])} 🔀\n{pretty_queue(queue_id)}."
     finally:
         return to_static_channel_response(message)
 
@@ -141,12 +141,12 @@ def qjump(user_id, user_name, queue_id, position):
     if current_pos is not None:
         queues[queue_id].pop(current_pos - 1)
         queues[queue_id].insert(position - 1, user_id)
-        message = f"{make_tag(user_id)} jumped from position {current_pos} to position {position} in {get_queue_designation(queue_id)}.\n{pretty_queue(queue_id)}"
+        message = f"{make_tag(user_id)} jumped from position {current_pos} to position {position} in {get_queue_designation(queue_id)} 🦘\n{pretty_queue(queue_id)}"
     else:
         # User is not in queue so just insert them at the requested position
         queues[queue_id].insert(position - 1, user_id)
         enqueued_users[user_id] = {'joined': datetime.datetime.now(), 'name': user_name, 'queue_id': queue_id}
-        message = f"{make_tag(user_id)} has joined {get_queue_designation(queue_id)} at position {position}.\n{pretty_queue(queue_id)}"
+        message = f"{make_tag(user_id)} has jumped into {get_queue_designation(queue_id)} at position {position} 🦘\n{pretty_queue(queue_id)}"
     
     return to_static_channel_response(message)
 
