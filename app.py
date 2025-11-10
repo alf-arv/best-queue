@@ -107,6 +107,49 @@ def qswap(user_id, queue_id, swap_with):
     finally:
         return to_static_channel_response(message)
 
+# -- JUMP --
+@app.route('/qjump', methods=['POST'])
+def qjump_endpoint():
+    if len(request.form['text'].split(' ')) < 1:
+        return to_static_channel_response("Invalid jump request. Usage: /qjump [pos] or /qjump [queue] [pos]")
+    elif len(request.form['text'].split(' ')) == 1:
+        queue_id, jump_to_pos = f"#{request.form['channel_id']}", request.form['text']
+    elif len(request.form['text'].split(' ')) == 2:
+        queue_id, jump_to_pos = request.form['text'].split(' ')
+    else:
+        return to_static_channel_response("Invalid jump request. Usage: /qjump [pos] or /qjump [queue] [pos]")
+    
+    try:
+        int_jump_to_pos = int(jump_to_pos)
+        return qjump(request.form['user_id'], queue_id, int_jump_to_pos)
+    except ValueError:
+        return to_static_channel_response("Invalid position. Please provide a valid number.")
+
+def qjump(user_id, queue_id, position):
+    if queue_id not in queues:
+        queues[queue_id] = []
+    
+    current_pos = get_queue_position_by_id(queue_id, user_id)
+    
+    max_position = len(queues[queue_id]) + 1 if current_pos is None else len(queues[queue_id])
+    if position < 1 or position > max_position:
+        return to_static_channel_response(f"Invalid position {position}. Please provide a position between 1 and {max_position}.")
+    
+    if current_pos is not None and position == current_pos:
+        return to_static_channel_response(f"{make_tag(user_id)} is already at position {position} in {get_queue_designation(queue_id)}.\n{pretty_queue(queue_id)}")
+    
+    if current_pos is not None:
+        queues[queue_id].pop(current_pos - 1)
+        queues[queue_id].insert(position - 1, user_id)
+        message = f"{make_tag(user_id)} jumped from position {current_pos} to position {position} in {get_queue_designation(queue_id)}.\n{pretty_queue(queue_id)}"
+    else:
+        # User is not in queue so just insert them at the requested position
+        queues[queue_id].insert(position - 1, user_id)
+        enqueued_users[user_id] = {'joined': datetime.datetime.now(), 'queue_id': queue_id}
+        message = f"{make_tag(user_id)} has joined {get_queue_designation(queue_id)} at position {position}.\n{pretty_queue(queue_id)}"
+    
+    return to_static_channel_response(message)
+
 # -- KICK --
 @app.route('/qkick', methods=['POST'])
 def qkick_endpoint():
@@ -320,7 +363,7 @@ def fallback_if_blank(input, fallback):
 def to_static_channel_response(message: str):
     return jsonify({
             "response_type": "in_channel",
-            "text": f"{message}\n_Commands:_ `/qshow`, `/qjoin`, `/qleave`, `/qswap [pos]` _and_ `/qkick [pos]`"
+            "text": f"{message}\n_Commands:_ `/qshow`, `/qjoin`, `/qleave`, `/qswap [pos]`, `/qjump [pos]` _and_ `/qkick [pos]`"
         })
 
 def get_backup_file_path():
